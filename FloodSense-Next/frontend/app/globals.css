@@ -1,0 +1,241 @@
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+
+:root {
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f6f8fb;
+  color: #142239;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Manrope", "DM Sans", sans-serif;
+  letter-spacing: -0.035em;
+}
+
+button, select, input, textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+select, input, textarea {
+  outline: none;
+}
+
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 3px solid #93b6fb;
+  outline-offset: 2px;
+}
+
+/* Panels */
+
+.panel {
+  border-radius: 1rem;
+  border: 1px solid #e7edf5;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(17, 33, 61, 0.03),
+    0 10px 34px rgba(22, 42, 69, 0.035);
+}
+
+.panel-pad {
+  padding: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .panel-pad {
+    padding: 1.5rem;
+  }
+}
+
+.muted {
+  color: #78869a;
+}
+
+/* Form fields */
+
+.field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #dfe7f0;
+  background: #ffffff;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #334155;
+  transition: border-color 0.2s ease;
+}
+
+.field:focus {
+  border-color: #3b82f6;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #64748b;
+}
+
+/* Buttons */
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.btn-primary {
+  background: #215de5;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: #154bc3;
+}
+
+.btn-secondary {
+  border: 1px solid #dfe7f0;
+  background: #ffffff;
+  color: #435169;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+}
+
+/* Labels and status */
+
+.label-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.17em;
+  color: #2563eb;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 11px;
+  line-height: 1rem;
+  font-weight: 700;
+}
+
+.status-low {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.status-watch {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.status-high {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 3px;
+  border-radius: 50%;
+}
+
+/* Leaflet map */
+
+.leaflet-container {
+  font-family: "DM Sans", sans-serif !important;
+  z-index: 0;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px !important;
+}
+
+/* Scrollbars */
+
+.scroll-thin::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #d7dfeb;
+  border-radius: 10px;
+}
+
+/* Range slider */
+
+input[type="range"] {
+  accent-color: #2563eb;
+}
+
+/* Animations */
+
+.fade-enter {
+  animation: fade-in 0.22s ease both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0.3;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter {
+    animation: none;
+  }
+}
