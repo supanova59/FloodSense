@@ -1,4 +1,4 @@
-import StreetMonitor from "../../components/StreetMonitor";
+import Dashboard from "../../components/Dashboard";
 export default function StreetsPage() {
-  return <StreetMonitor />;
+  return <Dashboard />;
 }

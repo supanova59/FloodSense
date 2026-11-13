@@ -1,5 +1,13 @@
 "use client";
-import Link from "next/link";
+import { io } from "socket.io-client";
+import {
+  CloudRain,
+  Droplets,
+  MapPin,
+  MessageSquare,
+  RefreshCw,
+  Radio,
+} from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 type User = { id: string; name: string; role: "resident" | "admin" };
 type Area = { slug: string; name: string };
@@ -10,6 +18,7 @@ type Report = {
   status: string;
   reportedWaterDepthCm: number;
   source: string;
+  createdAt: string;
 };
 type Street = {
   id: string;
@@ -18,9 +27,23 @@ type Street = {
   floodStatus: string;
   source: string;
   observedAt: string | null;
+  landmark: string;
+  drainageHealthScore: number | null;
+  estimatedFloodTimeMins: number | null;
+  potholes: {
+    landmark: string;
+    estimatedDepthCm: number;
+    dangerRating: string;
+  }[];
 };
 type Dashboard = {
   dataMode: string;
+  simulationEnabled: boolean;
+  summary: {
+    totalMonitoredStreets: number;
+    floodedOrImpassableCount: number;
+    activeAreaReports: number;
+  };
   streets: Street[];
   reports: Report[];
   weather: { source: string; rainfallMmPerHr: number | null };
@@ -41,6 +64,11 @@ async function api<T>(
   return data;
 }
 export default function StreetMonitor() {
+  const [refreshTick, setRefreshTick] = useState(0);
+  const [connection, setConnection] = useState("Periodic updates");
+  const [alerts, setAlerts] = useState<
+    { timestamp: string; report?: Report; type: string }[]
+  >([]);
   const [areas, setAreas] = useState<Area[]>([]),
     [area, setArea] = useState(""),
     [dashboard, setDashboard] = useState<Dashboard | null>(null);
@@ -76,6 +104,33 @@ export default function StreetMonitor() {
       alive = false;
     };
   }, []);
+  useEffect(() => {
+    setAlerts([]);
+    const url = process.env.NEXT_PUBLIC_STREET_SOCKET_URL;
+    if (!url || !area) return;
+    const socket = io(url, { transports: ["websocket"] });
+    setConnection("Connecting alerts...");
+    socket.on("connect", () => {
+      socket.emit("joinArea", area);
+      setConnection("Area alerts connected");
+      setRefreshTick((n) => n + 1);
+    });
+    socket.on("disconnect", () =>
+      setConnection("Reconnecting · periodic updates active"),
+    );
+    socket.on("connect_error", () =>
+      setConnection("Alerts unavailable · periodic updates active"),
+    );
+    socket.on("areaAlert", (event) => {
+      if (event.areaSlug !== area) return;
+      setAlerts((items) => [event, ...items].slice(0, 10));
+      setRefreshTick((n) => n + 1);
+    });
+    return () => {
+      socket.emit("leaveArea", area);
+      socket.disconnect();
+    };
+  }, [area]);
   const refreshPersonal = useCallback(async () => {
     if (!user) return;
     setMine((await api<{ data: Report[] }>("reports/mine")).data);
@@ -112,7 +167,7 @@ export default function StreetMonitor() {
       alive = false;
       clearInterval(timer);
     };
-  }, [area]);
+  }, [area, refreshTick]);
   async function action(fn: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -162,18 +217,43 @@ export default function StreetMonitor() {
     setMessage(`Report ${status}.`);
   }
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-sm text-blue-700">
-            FloodSense · Community observations
-          </p>
-          <h1 className="text-3xl font-bold">Street monitor</h1>
+    <section className="space-y-6" aria-label="Neighbourhood conditions">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-800">
+          <Radio size={14} />
+          {connection}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="btn-secondary"
+            disabled={busy || !area}
+            onClick={() => setRefreshTick((n) => n + 1)}
+          >
+            <RefreshCw size={15} />
+            Refresh data
+          </button>
+          <button
+            className="btn-primary"
+            disabled={
+              busy || !dashboard?.simulationEnabled || user?.role !== "admin"
+            }
+            onClick={() =>
+              void action(async () => {
+                await api(`ai/simulate-rain/${area}`, "POST", {});
+                setRefreshTick((n) => n + 1);
+                setMessage("Synthetic cloudburst saved for this area.");
+              })
+            }
+          >
+            <CloudRain size={15} />
+            Simulate cloudburst
+          </button>
         </div>
-        <Link className="btn-secondary" href="/">
-          Open scenario planner
-        </Link>
-      </header>
+      </div>
+      <p className="text-xs text-slate-500">
+        Cloudburst simulation is available to reviewers in an isolated demo. It
+        never creates real weather observations.
+      </p>
       <p className="text-sm text-slate-600">
         Conditions are based on moderated community reports, valid for 24 hours.
         Unknown means no current observation. This is not a safe-travel
@@ -194,6 +274,43 @@ export default function StreetMonitor() {
         >
           {message}
         </p>
+      )}
+      {dashboard && (
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {[
+            {
+              label: "Monitored streets",
+              value: dashboard.summary.totalMonitoredStreets,
+              icon: MapPin,
+            },
+            {
+              label: "Flooded / impassable",
+              value: dashboard.summary.floodedOrImpassableCount,
+              icon: Droplets,
+            },
+            {
+              label: "Rainfall",
+              value:
+                dashboard.weather.rainfallMmPerHr === null
+                  ? "Unavailable"
+                  : `${dashboard.weather.rainfallMmPerHr} mm/h`,
+              icon: CloudRain,
+            },
+            {
+              label: "Active observations",
+              value: dashboard.summary.activeAreaReports,
+              icon: MessageSquare,
+            },
+          ].map(({ label, value, icon: Icon }) => (
+            <div className="panel p-5" key={label}>
+              <Icon size={19} className="mb-4 text-blue-600" />
+              <p className="text-xs text-slate-500">{label}</p>
+              <p className="mt-2 text-2xl font-extrabold text-slate-800">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
       )}
       <section className="panel space-y-4 p-5" aria-label="Area conditions">
         <label className="block">
@@ -234,12 +351,58 @@ export default function StreetMonitor() {
                   key={s.id}
                 >
                   <h2 className="font-semibold">{s.name}</h2>
+                  <p className="mt-1 text-xs text-slate-500">{s.landmark}</p>
                   <p className="mt-2">
                     {s.floodStatus.replaceAll("_", " ")} ·{" "}
                     {s.currentWaterDepthCm === null
                       ? "No current reading"
                       : `${s.currentWaterDepthCm} cm reported water depth`}
                   </p>
+                  <dl className="my-4 grid grid-cols-3 gap-3 rounded-lg bg-slate-50 p-3 text-xs">
+                    <div>
+                      <dt className="text-slate-500">Drainage score</dt>
+                      <dd className="mt-1 font-bold">
+                        {s.drainageHealthScore === null
+                          ? "Unknown"
+                          : `${s.drainageHealthScore}/100`}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-500">Potholes</dt>
+                      <dd className="mt-1 font-bold">
+                        {dashboard.dataMode === "synthetic"
+                          ? s.potholes.length
+                          : "Unsurveyed"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-500">Formula ETA</dt>
+                      <dd className="mt-1 font-bold">
+                        {s.estimatedFloodTimeMins === null
+                          ? "Unavailable"
+                          : `${s.estimatedFloodTimeMins} min`}
+                      </dd>
+                    </div>
+                  </dl>
+                  {s.potholes.length > 0 && (
+                    <details className="mb-3 text-xs">
+                      <summary className="cursor-pointer font-semibold text-blue-700">
+                        Pothole details
+                      </summary>
+                      {s.potholes.map((p, i) => (
+                        <p className="mt-2" key={i}>
+                          {p.landmark} · {p.estimatedDepthCm} cm example depth ·{" "}
+                          {p.dangerRating.replaceAll("_", " ")}
+                        </p>
+                      ))}
+                    </details>
+                  )}
+                  {dashboard.dataMode === "synthetic" && (
+                    <p className="mb-3 text-xs text-amber-800">
+                      Drainage, potholes and ETA are synthetic scenario values,
+                      not measured conditions or validated forecasts.
+                    </p>
+                  )}
                   <p className="mt-1 text-xs text-slate-600">
                     Source: {s.source}
                     {s.observedAt
@@ -255,6 +418,63 @@ export default function StreetMonitor() {
           </>
         )}
       </section>
+      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        <section className="panel p-5">
+          <h2 className="text-lg font-extrabold text-slate-800">
+            Community observations
+          </h2>
+          <p className="mt-1 text-xs text-slate-500">
+            Confirmed observations for the selected area.
+          </p>
+          {!dashboard?.reports.length && (
+            <p className="mt-4 text-sm text-slate-500">
+              No active observations in this area.
+            </p>
+          )}
+          {dashboard?.reports.map((r) => (
+            <article key={r.id} className="mt-4 border-t border-slate-100 pt-4">
+              <h3 className="text-sm font-bold">{r.streetName}</h3>
+              <p className="mt-1 text-sm text-slate-600">{r.description}</p>
+              <p className="mt-2 text-xs text-slate-500">
+                {r.reportedWaterDepthCm} cm · {r.source} ·{" "}
+                {new Date(r.createdAt).toLocaleString()}
+              </p>
+            </article>
+          ))}
+        </section>
+        <section className="panel p-5">
+          <h2 className="text-lg font-extrabold text-slate-800">
+            Area alert stream
+          </h2>
+          <p className="mt-1 text-xs text-slate-500">
+            New events for this area during your visit.
+          </p>
+          <div aria-live="polite">
+            {!alerts.length && (
+              <p className="mt-4 text-sm text-slate-500">
+                No new alerts. Confirmed reports and demo cloudbursts appear
+                here when alerts are connected.
+              </p>
+            )}
+            {alerts.map((event, i) => (
+              <article
+                key={event.timestamp + i}
+                className="mt-4 rounded-lg bg-blue-50 p-3"
+              >
+                <h3 className="text-sm font-bold">
+                  {event.report?.streetName || "Area update"}
+                </h3>
+                <p className="mt-1 text-sm">
+                  {event.report?.description || event.type}
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  {new Date(event.timestamp).toLocaleTimeString()}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
       {!user ? (
         <section className="panel p-5">
           <h2 className="text-xl font-semibold">
@@ -445,6 +665,6 @@ export default function StreetMonitor() {
           )}
         </>
       )}
-    </main>
+    </section>
   );
 }

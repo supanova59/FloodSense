@@ -1,8 +1,6 @@
 # Selected backend integration
 
-The existing Next.js frontend remains the app. `/` is the labelled scenario planner;
-`/streets` reads Express/MongoDB, supports accounts, submits observations and gives
-administrators a moderation queue.
+The existing Next.js frontend is the single app. `/` and `/streets` open its integrated neighbourhood view; original scenario views remain in navigation. See BLENDED-PREVIEW.md for the current working preview.
 
 Browser → same-origin Next.js `/api/street/*` → Express `/api/*` → MongoDB.
 The browser holds an HttpOnly, SameSite=Strict session cookie. Next.js forwards its
@@ -32,8 +30,7 @@ npm run dev
 ```
 
 Open `http://localhost:3000/streets`. Select an area, register (12+ character password)
-and submit a report. It appears pending in My submissions. The disposable preview
-grants no public account administrator access.
+and submit a report. It appears pending in My submissions. The disposable preview prints a randomly generated local reviewer login for testing. Public registration still creates only residents.
 
 ## Atlas and moderation
 
@@ -102,3 +99,5 @@ refreshed street readings, backend-outage errors and mobile layout.
 BBMP datasets still require a reviewed import; sample streets are not those datasets.
 There is no trained flood/pothole model. The prediction endpoint identifies itself
 as an unvalidated heuristic; the UI does not present it as live safety advice.
+
+The restored UI and local Socket.IO flow were browser-tested: reviewer login, cloudburst event, pending report, confirmation and updated street reading. The original Overview was checked too.

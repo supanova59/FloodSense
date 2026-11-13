@@ -47,6 +47,8 @@ test("authenticated reporting, moderation, area integrity and observation consis
   const first = (await request("areas/bellandur")).data;
   street = first.streets[0];
   assert.equal(first.dataMode, "synthetic");
+  assert.ok(Number.isFinite(street.drainageHealthScore));
+  assert.ok(Array.isArray(street.potholes));
   assert.equal(first.weather.source, "Synthetic weather scenario");
   const registration = await request("auth/register", "POST", {
     name: "Resident",
@@ -179,6 +181,9 @@ test("authenticated reporting, moderation, area integrity and observation consis
       .status,
     403,
   );
+  process.env.ENABLE_DEMO_SIMULATION = "true";
+  assert.equal((await request("ai/simulate-rain/bellandur", "POST", {}, adminToken)).status, 200);
+  process.env.ENABLE_DEMO_SIMULATION = "false";
   const count = await Report.countDocuments();
   await seedSamples();
   assert.equal(await Report.countDocuments(), count);

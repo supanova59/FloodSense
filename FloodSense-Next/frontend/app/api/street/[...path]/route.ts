@@ -11,7 +11,9 @@ async function proxy(
     return NextResponse.json({ message: "Invalid endpoint" }, { status: 400 });
   const endpoint = path.join("/");
   const writable = req.method !== "GET";
-  if (writable && req.headers.get("origin") !== req.nextUrl.origin)
+  // Next may normalize its internal URL to localhost; use the actual request host.
+  const expectedOrigin = `${req.nextUrl.protocol}//${req.headers.get("host")}`;
+  if (writable && req.headers.get("origin") !== expectedOrigin)
     return NextResponse.json(
       { message: "Same-origin request required" },
       { status: 403 },
@@ -21,7 +23,7 @@ async function proxy(
     return NextResponse.json(
       {
         message:
-          "Backend not configured. Set BACKEND_URL on the frontend server.",
+          "Neighbourhood service is not connected yet. Please try again later.",
       },
       { status: 503 },
     );

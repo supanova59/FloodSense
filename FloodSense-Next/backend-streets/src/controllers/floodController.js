@@ -91,6 +91,16 @@ exports.getAreaDashboard = wrap(async (req, res) => {
       id: String(s._id),
       name: s.name,
       landmark: s.landmarkPlace,
+      drainageHealthScore:
+        process.env.DATA_MODE === "synthetic" ? s.drainageHealthScore : null,
+      potholes:
+        process.env.DATA_MODE === "synthetic"
+          ? (s.potholes || []).map((p) => ({
+              landmark: p.landmark,
+              estimatedDepthCm: p.estimatedDepthCm,
+              dangerRating: p.dangerRating,
+            }))
+          : [],
       coordinates: s.coordinates,
       currentWaterDepthCm: depth,
       floodStatus: metrics?.floodStatus || "UNKNOWN",
@@ -117,6 +127,9 @@ exports.getAreaDashboard = wrap(async (req, res) => {
       ).length,
       activeAreaReports: count,
     },
+    simulationEnabled:
+      process.env.DATA_MODE === "synthetic" &&
+      process.env.ENABLE_DEMO_SIMULATION === "true",
     dataMode:
       process.env.DATA_MODE === "synthetic" ? "synthetic" : "observations",
   });
@@ -189,14 +202,12 @@ exports.createAreaReport = wrap(async (req, res) => {
     status: "pending",
     source: "community",
   });
-  res
-    .status(201)
-    .json({
-      success: true,
-      data: publicReport(report),
-      message:
-        "Saved for moderation. Street conditions change only after confirmation.",
-    });
+  res.status(201).json({
+    success: true,
+    data: publicReport(report),
+    message:
+      "Saved for moderation. Street conditions change only after confirmation.",
+  });
 });
 exports.moderate = wrap(async (req, res) => {
   const status = req.body.status;
