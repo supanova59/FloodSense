@@ -41,11 +41,7 @@ export default function RiskMap({
     >({}),
     [bbmpError, setBbmpError] = useState(""),
     [bbmpAttempt, setBbmpAttempt] = useState(0),
-    [panelOpen, setPanelOpen] = useState(
-      () =>
-        typeof window === "undefined" ||
-        window.matchMedia("(min-width: 640px)").matches,
-    );
+    [panelOpen, setPanelOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null),
     mapRef = useRef<import("leaflet").Map | null>(null),
     layers = useRef<import("leaflet").Layer[]>([]),
@@ -136,7 +132,9 @@ export default function RiskMap({
         const points = bbmpData[layer.id];
         if (!visible[layer.id] || !points) continue;
         const group = L.layerGroup();
-        for (const p of points)
+        for (const p of points) {
+          const tooltip = document.createElement("span");
+          tooltip.textContent = p.name;
           L.circleMarker([p.lat, p.lng], {
             renderer: renderer.current ?? undefined,
             radius: 5.5,
@@ -145,9 +143,10 @@ export default function RiskMap({
             fillColor: layer.color,
             fillOpacity: 0.85,
           })
-            .bindTooltip(p.name, { direction: "top", offset: [0, -6] })
+            .bindTooltip(tooltip, { direction: "top", offset: [0, -6] })
             .bindPopup(bbmpPopupHtml(layer, p))
             .addTo(group);
+        }
         group.addTo(m);
         overlays.current.push(group);
       }
@@ -298,7 +297,8 @@ export default function RiskMap({
               </p>
             )}
             <p className="pt-1 text-[10px] leading-snug text-slate-500">
-              Source: BBMP open data. Click a point for details.
+              Supplied BBMP reference exports · date and licence unverified.
+              Locations are not current flood readings. Click for details.
             </p>
           </fieldset>
         </details>

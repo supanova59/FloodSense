@@ -1,7 +1,7 @@
-// Official BBMP point datasets (flood-prone, low-lying, flood-vulnerable).
+// Supplied BBMP-labelled point datasets (flood-prone, low-lying, flood-vulnerable).
 // Source KML lives in data/bbmp/; `npm run data:build` regenerates the
 // GeoJSON served from public/data/. Unlike the illustrative risk scores in
-// lib/demo.ts, these locations are published reference data.
+// lib/demo.ts, these are reference locations, not current flood observations.
 
 export type BbmpLayerId = "flood-prone" | "low-lying" | "flood-vulnerable";
 
@@ -55,11 +55,11 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 
 // Validates a GeoJSON FeatureCollection of Points, dropping malformed features.
 export function parseBbmpGeoJson(input: unknown): BbmpPoint[] {
-  if (!isRecord(input) || !Array.isArray(input.features))
+  if (!isRecord(input) || input.type !== "FeatureCollection" || !Array.isArray(input.features))
     throw new Error("Not a GeoJSON FeatureCollection");
   const points: BbmpPoint[] = [];
   for (const f of input.features) {
-    if (!isRecord(f) || !isRecord(f.geometry) || !isRecord(f.properties))
+    if (!isRecord(f) || f.type !== "Feature" || !isRecord(f.geometry) || !isRecord(f.properties))
       continue;
     const { type, coordinates } = f.geometry;
     if (type !== "Point" || !Array.isArray(coordinates)) continue;
@@ -67,7 +67,9 @@ export function parseBbmpGeoJson(input: unknown): BbmpPoint[] {
     const p = f.properties;
     if (typeof lat !== "number" || typeof lng !== "number") continue;
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    if (lat < 12.7 || lat > 13.3 || lng < 77.3 || lng > 77.9) continue;
     if (typeof p.name !== "string" || typeof p.id !== "number") continue;
+    if (!p.name.trim() || !Number.isSafeInteger(p.id)) continue;
     points.push({
       id: p.id,
       name: p.name,

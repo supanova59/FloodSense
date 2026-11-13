@@ -110,7 +110,7 @@ for (const ds of DATASETS) {
     type: "FeatureCollection",
     name: ds.id,
     title: ds.title,
-    source: "BBMP (Bruhat Bengaluru Mahanagara Palike) open data, KML export",
+    source: "User-supplied BBMP-labelled KML exports; publication date and licence unverified",
     features,
   };
   writeFileSync(

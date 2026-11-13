@@ -1,6 +1,6 @@
 # Backend integration checkpoint — 2026-11-13
 
-Paused at the user's request. Resume only when asked.
+Resumed at the user's request; BBMP PR #7 integrated into the review branch.
 
 ## Saved code
 
@@ -8,7 +8,7 @@ Paused at the user's request. Resume only when asked.
   `origin/feature/mongodb-backend` (da314d7).
 - Local backup branch: `codex/backend-integration-work`, commit f8d2edc.
   That backup includes older experiments; the integration branch excludes them.
-- No changes pushed, no new PR opened, no merge to main, no cloud deployment.
+- Local integration resumed; see GitHub for the latest review PR. No merge to main or cloud backend deployment has been completed.
 - Existing production frontend: https://floodsenseweb.netlify.app
 
 Implemented authenticated reporting, MongoDB sessions with password hashing,
@@ -51,7 +51,7 @@ Preview MongoDB is disposable; test accounts/data are not persistent Atlas data.
   be a separate project from Next.js. SSO-protected backend previews need an explicit
   server-to-server access approach.
 - UI uses 15-second polling. Socket rooms are instance-local; do not claim global
-  instantaneous notifications. No official BBMP dataset import was performed.
+  instantaneous notifications. BBMP reference layers from PR #7 are now served as static GeoJSON; no MongoDB dataset import was performed.
 
 When resumed: inspect Git status, confirm clean branch contents, restart/recheck
 the preview, finish hosted configuration safely, push a review branch and open a

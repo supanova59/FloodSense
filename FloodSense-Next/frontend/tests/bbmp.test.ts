@@ -37,6 +37,12 @@ test("flood-vulnerable points carry ward number and zone attributes", () => {
 });
 test("parser drops malformed features and rejects non-collections", () => {
   assert.throws(() => parseBbmpGeoJson({ type: "Feature" }));
+  assert.throws(() => parseBbmpGeoJson({ type: "Feature", features: [] }));
+  assert.equal(parseBbmpGeoJson({ type: "FeatureCollection", features: [
+    {type:"Feature",geometry:{type:"Point",coordinates:[190,95]},properties:{id:1,name:"outside"}},
+    {type:"Feature",geometry:{type:"Point",coordinates:[77.6,12.9]},properties:{id:Infinity,name:"invalid id"}},
+    {type:"Feature",geometry:{type:"Point",coordinates:[77.6,12.9]},properties:{id:2,name:" "}}
+  ]}).length,0);
   const points = parseBbmpGeoJson({
     type: "FeatureCollection",
     features: [
