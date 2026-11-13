@@ -23,6 +23,7 @@ Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`. GitHub
 
 - Responsive app shell and five views: Overview, Risk explorer, Route intelligence, Community reports, City operations.
 - Real Leaflet map with OpenStreetMap standard tiles, clickable markers and map interactions.
+- Official BBMP point layers — 70 flood-prone, 128 low-lying and 200 flood-vulnerable locations — with on/off toggles, hover names and popups showing ward/zone. Source KML is in `data/bbmp/`; run `npm run data:build` to regenerate `public/data/*.geojson` after updating it. One low-lying record with no coordinates is skipped.
 - Rainfall scenario selector and 0–60 min forecast slider updating location risk scores.
 - Expandable risk contribution breakdown from the exact scoring function, severity thresholds, and explanatory route comparison.
 - Six illustrative Bengaluru locations, demo risk score breakdowns, locally generated risk rankings.
@@ -79,4 +80,9 @@ components/
   RiskMap.tsx          # Client-only Leaflet map
 lib/
   demo.ts              # Typed sample data, risks, paths
+  bbmp.ts              # BBMP layer config, GeoJSON loader/validator
+data/bbmp/             # Source BBMP KML exports
+public/data/           # Generated GeoJSON served to the map
+scripts/
+  kml-to-geojson.mjs   # KML -> GeoJSON converter (npm run data:build)
 ```
