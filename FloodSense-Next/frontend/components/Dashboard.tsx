@@ -60,8 +60,8 @@ const RiskMap = dynamic(() => import("./RiskMap"), {
 type View =
   "streets" | "overview" | "explorer" | "routes" | "reports" | "operations";
 const nav = [
-  { id: "streets", label: "My neighbourhood", icon: Droplets },
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "streets", label: "My neighbourhood", icon: Droplets },
   { id: "explorer", label: "Risk explorer", icon: Map },
   { id: "routes", label: "Route intelligence", icon: Route },
   { id: "reports", label: "Community reports", icon: Users },
@@ -179,7 +179,7 @@ function Metric({
   );
 }
 export default function Dashboard() {
-  const [view, setView] = useState<View>("streets"),
+  const [view, setView] = useState<View>("overview"),
     [sidebar, setSidebar] = useState(false),
     [scenario, setScenario] = useState<Scenario>({ rainfall: 30, minute: 0 }),
     [selected, setSelected] = useState("bellandur");
