@@ -1051,6 +1051,7 @@ export default function Dashboard() {
                     risks={risks}
                     route={from !== to ? { usual: normal, safer } : undefined}
                     height="min(70vh,640px)"
+                    bbmpDefaultVisible={false}
                   />
                 </div>
               </div>
