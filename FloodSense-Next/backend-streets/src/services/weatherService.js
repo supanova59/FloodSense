@@ -2,11 +2,41 @@ const axios = require("axios");
 
 // Realistic fallback profiles for Bengaluru neighborhoods when OPENWEATHER_API_KEY is not configured
 const FALLBACK_WEATHER = {
-  bellandur: { tempC: 23.4, humidity: 88, rainfallMmPerHr: 18.5, condition: "Heavy Rain", windKmph: 16 },
-  "hsr-layout": { tempC: 24.1, humidity: 82, rainfallMmPerHr: 9.2, condition: "Moderate Rain", windKmph: 12 },
-  whitefield: { tempC: 23.8, humidity: 85, rainfallMmPerHr: 14.0, condition: "Rain Showers", windKmph: 14 },
-  koramangala: { tempC: 24.5, humidity: 79, rainfallMmPerHr: 6.4, condition: "Light Rain", windKmph: 11 },
-  "silk-board": { tempC: 23.6, humidity: 87, rainfallMmPerHr: 16.8, condition: "Heavy Drizzle", windKmph: 15 }
+  bellandur: {
+    tempC: 23.4,
+    humidity: 88,
+    rainfallMmPerHr: 18.5,
+    condition: "Heavy Rain",
+    windKmph: 16,
+  },
+  "hsr-layout": {
+    tempC: 24.1,
+    humidity: 82,
+    rainfallMmPerHr: 9.2,
+    condition: "Moderate Rain",
+    windKmph: 12,
+  },
+  whitefield: {
+    tempC: 23.8,
+    humidity: 85,
+    rainfallMmPerHr: 14.0,
+    condition: "Rain Showers",
+    windKmph: 14,
+  },
+  koramangala: {
+    tempC: 24.5,
+    humidity: 79,
+    rainfallMmPerHr: 6.4,
+    condition: "Light Rain",
+    windKmph: 11,
+  },
+  "silk-board": {
+    tempC: 23.6,
+    humidity: 87,
+    rainfallMmPerHr: 16.8,
+    condition: "Heavy Drizzle",
+    windKmph: 15,
+  },
 };
 
 async function getAreaWeather(area) {
@@ -18,7 +48,9 @@ async function getAreaWeather(area) {
       const { data } = await axios.get(url, { timeout: 5000 });
 
       const rainfallMmPerHr =
-        (data.rain && (data.rain["1h"] || (data.rain["3h"] ? data.rain["3h"] / 3 : 0))) || 0;
+        (data.rain &&
+          (data.rain["1h"] || (data.rain["3h"] ? data.rain["3h"] / 3 : 0))) ||
+        0;
 
       return {
         areaSlug: area.slug,
@@ -31,37 +63,48 @@ async function getAreaWeather(area) {
         condition: data.weather?.[0]?.main || "Clouds",
         description: data.weather?.[0]?.description || "overcast clouds",
         windKmph: Math.round((data.wind?.speed || 3) * 3.6),
-        observedAt: new Date().toISOString()
+        observedAt: new Date().toISOString(),
       };
     } catch (err) {
-      console.warn(`[WeatherService] Live API failed for ${area.slug}, using local telemetry fallback.`);
+      console.warn("[WeatherService] Weather provider unavailable");
     }
   }
 
+  if (process.env.DATA_MODE !== "synthetic")
+    return {
+      areaSlug: area.slug,
+      source: "unavailable",
+      rainfallMmPerHr: null,
+      tempC: null,
+      condition: "Weather unavailable",
+      observedAt: null,
+    };
   const base = FALLBACK_WEATHER[area.slug] || {
     tempC: 24.0,
     humidity: 80,
     rainfallMmPerHr: 8.0,
     condition: "Moderate Rain",
-    windKmph: 12
+    windKmph: 12,
   };
 
   // Add slight live jitter so repeated refreshes feel dynamic
-  const jitter = (Math.random() - 0.5) * 1.4;
+  const jitter = 0; // Repeatable synthetic preview, not sensor telemetry.
   const rain = Math.max(0, Number((base.rainfallMmPerHr + jitter).toFixed(1)));
 
   return {
     areaSlug: area.slug,
     areaName: area.name,
-    source: "FloodSense Hyperlocal Telemetry",
+    source: "Synthetic weather scenario",
     tempC: base.tempC,
     feelsLikeC: Number((base.tempC - 0.5).toFixed(1)),
     humidity: base.humidity,
     rainfallMmPerHr: rain,
-    condition: rain > 15 ? "Heavy Rain" : rain > 5 ? "Moderate Rain" : "Light Drizzle",
-    description: rain > 15 ? "intense convective downpour" : "monsoon rain band",
+    condition:
+      rain > 15 ? "Heavy Rain" : rain > 5 ? "Moderate Rain" : "Light Drizzle",
+    description:
+      rain > 15 ? "intense convective downpour" : "monsoon rain band",
     windKmph: base.windKmph,
-    observedAt: new Date().toISOString()
+    observedAt: new Date().toISOString(),
   };
 }
 

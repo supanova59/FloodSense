@@ -1,0 +1,25 @@
+name: Backend integration
+on:
+  pull_request:
+    paths: ['FloodSense-Next/backend-streets/**', '.github/workflows/backend.yml']
+  push:
+    branches: [main]
+    paths: ['FloodSense-Next/backend-streets/**', '.github/workflows/backend.yml']
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: FloodSense-Next/backend-streets
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: FloodSense-Next/backend-streets/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm test

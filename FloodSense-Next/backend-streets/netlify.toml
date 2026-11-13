@@ -1,0 +1,11 @@
+# Deploy this folder as a SEPARATE Netlify project, not the Next.js project.
+[build]
+  command = "npm run check"
+  publish = "public"
+[build.environment]
+  NODE_VERSION = "24"
+[server]
+  size = "small"
+[server.scale]
+  min = 0
+  max = 1

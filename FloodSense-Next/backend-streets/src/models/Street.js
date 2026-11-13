@@ -8,9 +8,9 @@ const PotholeSchema = new mongoose.Schema({
   dangerRating: {
     type: String,
     enum: ["MINOR", "MODERATE", "SEVERE", "AXLE_BREAKER"],
-    default: "MODERATE"
+    default: "MODERATE",
   },
-  confidenceScore: { type: Number, default: 0.88 } // AI vision/sensor confidence
+  confidenceScore: { type: Number, default: 0.88 }, // AI vision/sensor confidence
 });
 
 const StreetSchema = new mongoose.Schema(
@@ -20,12 +20,18 @@ const StreetSchema = new mongoose.Schema(
     landmarkPlace: { type: String, required: true }, // e.g., "Near Intel / Ecospace Gate 2"
     streetType: {
       type: String,
-      enum: ["Arterial Road", "Service Road", "Underpass", "Residential Main", "Junction"],
-      default: "Arterial Road"
+      enum: [
+        "Arterial Road",
+        "Service Road",
+        "Underpass",
+        "Residential Main",
+        "Junction",
+      ],
+      default: "Arterial Road",
     },
     coordinates: {
       lat: { type: Number, required: true },
-      lng: { type: Number, required: true }
+      lng: { type: Number, required: true },
     },
     drainageHealthScore: { type: Number, min: 1, max: 100, default: 50 }, // Lower = clogs faster
     elevationFactor: { type: Number, min: 0.5, max: 2.0, default: 1.0 }, // >1.0 means low-lying basin
@@ -34,17 +40,18 @@ const StreetSchema = new mongoose.Schema(
     floodStatus: {
       type: String,
       enum: ["CLEAR", "WATERLOGGED", "FLOODED", "IMPASSABLE"],
-      default: "CLEAR"
+      default: "CLEAR",
     },
     passableFor: {
       twoWheeler: { type: Boolean, default: true },
       hatchbackSedan: { type: Boolean, default: true },
-      suvBus: { type: Boolean, default: true }
+      suvBus: { type: Boolean, default: true },
     },
     potholes: [PotholeSchema],
-    lastUpdated: { type: Date, default: Date.now }
+    lastUpdated: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
+StreetSchema.index({ areaSlug: 1, name: 1 }, { unique: true });
 module.exports = mongoose.model("Street", StreetSchema);

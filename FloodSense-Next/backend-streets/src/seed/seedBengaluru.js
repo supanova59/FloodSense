@@ -13,7 +13,7 @@ const AREAS = [
     coordinates: { lat: 12.9259, lng: 77.6762 },
     lakeProximity: "High (Bellandur Lake Valley)",
     overallRiskLevel: "CRITICAL",
-    emergencyHelpline: "080-28520011"
+    emergencyHelpline: "080-28520011",
   },
   {
     name: "HSR Layout",
@@ -23,7 +23,7 @@ const AREAS = [
     coordinates: { lat: 12.9121, lng: 77.6446 },
     lakeProximity: "High (Agara Lake Basin)",
     overallRiskLevel: "HIGH",
-    emergencyHelpline: "080-25721100"
+    emergencyHelpline: "080-25721100",
   },
   {
     name: "Whitefield",
@@ -33,7 +33,7 @@ const AREAS = [
     coordinates: { lat: 12.9698, lng: 77.75 },
     lakeProximity: "Moderate (Varthur & Nallurhalli)",
     overallRiskLevel: "HIGH",
-    emergencyHelpline: "080-28452244"
+    emergencyHelpline: "080-28452244",
   },
   {
     name: "Koramangala",
@@ -43,7 +43,7 @@ const AREAS = [
     coordinates: { lat: 12.9352, lng: 77.6245 },
     lakeProximity: "High (Ejipura / Mestripalya SWD)",
     overallRiskLevel: "HIGH",
-    emergencyHelpline: "080-25531234"
+    emergencyHelpline: "080-25531234",
   },
   {
     name: "Silk Board & BTM",
@@ -53,8 +53,8 @@ const AREAS = [
     coordinates: { lat: 12.9177, lng: 77.6238 },
     lakeProximity: "High (Madiwala Lake Overflow)",
     overallRiskLevel: "CRITICAL",
-    emergencyHelpline: "080-26781122"
-  }
+    emergencyHelpline: "080-26781122",
+  },
 ];
 
 const STREETS = [
@@ -72,9 +72,23 @@ const STREETS = [
     floodStatus: "FLOODED",
     passableFor: { twoWheeler: false, hatchbackSedan: false, suvBus: true },
     potholes: [
-      { landmark: "Opposite Ecospace Skywalk", estimatedDepthCm: 21, widthCm: 110, submerged: true, dangerRating: "SEVERE", confidenceScore: 0.94 },
-      { landmark: "Bellandur Bus Bay Merge", estimatedDepthCm: 14, widthCm: 75, submerged: true, dangerRating: "MODERATE", confidenceScore: 0.89 }
-    ]
+      {
+        landmark: "Opposite Ecospace Skywalk",
+        estimatedDepthCm: 21,
+        widthCm: 110,
+        submerged: true,
+        dangerRating: "SEVERE",
+        confidenceScore: 0.94,
+      },
+      {
+        landmark: "Bellandur Bus Bay Merge",
+        estimatedDepthCm: 14,
+        widthCm: 75,
+        submerged: true,
+        dangerRating: "MODERATE",
+        confidenceScore: 0.89,
+      },
+    ],
   },
   {
     areaSlug: "bellandur",
@@ -89,8 +103,15 @@ const STREETS = [
     floodStatus: "WATERLOGGED",
     passableFor: { twoWheeler: false, hatchbackSedan: true, suvBus: true },
     potholes: [
-      { landmark: "Near Lake Bridge Approach", estimatedDepthCm: 18, widthCm: 90, submerged: true, dangerRating: "SEVERE", confidenceScore: 0.91 }
-    ]
+      {
+        landmark: "Near Lake Bridge Approach",
+        estimatedDepthCm: 18,
+        widthCm: 90,
+        submerged: true,
+        dangerRating: "SEVERE",
+        confidenceScore: 0.91,
+      },
+    ],
   },
   {
     areaSlug: "bellandur",
@@ -105,8 +126,15 @@ const STREETS = [
     floodStatus: "CLEAR",
     passableFor: { twoWheeler: true, hatchbackSedan: true, suvBus: true },
     potholes: [
-      { landmark: "3rd Cross Junction", estimatedDepthCm: 7, widthCm: 45, submerged: false, dangerRating: "MINOR", confidenceScore: 0.85 }
-    ]
+      {
+        landmark: "3rd Cross Junction",
+        estimatedDepthCm: 7,
+        widthCm: 45,
+        submerged: false,
+        dangerRating: "MINOR",
+        confidenceScore: 0.85,
+      },
+    ],
   },
 
   // HSR LAYOUT
@@ -123,8 +151,15 @@ const STREETS = [
     floodStatus: "WATERLOGGED",
     passableFor: { twoWheeler: false, hatchbackSedan: true, suvBus: true },
     potholes: [
-      { landmark: "Near CPWD Quarters Gate", estimatedDepthCm: 16, widthCm: 80, submerged: true, dangerRating: "SEVERE", confidenceScore: 0.9 }
-    ]
+      {
+        landmark: "Near CPWD Quarters Gate",
+        estimatedDepthCm: 16,
+        widthCm: 80,
+        submerged: true,
+        dangerRating: "SEVERE",
+        confidenceScore: 0.9,
+      },
+    ],
   },
   {
     areaSlug: "hsr-layout",
@@ -139,8 +174,15 @@ const STREETS = [
     floodStatus: "WATERLOGGED",
     passableFor: { twoWheeler: true, hatchbackSedan: true, suvBus: true },
     potholes: [
-      { landmark: "Service Lane Entry", estimatedDepthCm: 11, widthCm: 60, submerged: true, dangerRating: "MODERATE", confidenceScore: 0.87 }
-    ]
+      {
+        landmark: "Service Lane Entry",
+        estimatedDepthCm: 11,
+        widthCm: 60,
+        submerged: true,
+        dangerRating: "MODERATE",
+        confidenceScore: 0.87,
+      },
+    ],
   },
   {
     areaSlug: "hsr-layout",
@@ -154,7 +196,7 @@ const STREETS = [
     aiPredictedFloodTimeMins: null,
     floodStatus: "CLEAR",
     passableFor: { twoWheeler: true, hatchbackSedan: true, suvBus: true },
-    potholes: []
+    potholes: [],
   },
 
   // WHITEFIELD
@@ -171,8 +213,15 @@ const STREETS = [
     floodStatus: "FLOODED",
     passableFor: { twoWheeler: false, hatchbackSedan: false, suvBus: true },
     potholes: [
-      { landmark: "Left Turn towards Kundalahalli", estimatedDepthCm: 24, widthCm: 120, submerged: true, dangerRating: "AXLE_BREAKER", confidenceScore: 0.95 }
-    ]
+      {
+        landmark: "Left Turn towards Kundalahalli",
+        estimatedDepthCm: 24,
+        widthCm: 120,
+        submerged: true,
+        dangerRating: "AXLE_BREAKER",
+        confidenceScore: 0.95,
+      },
+    ],
   },
   {
     areaSlug: "whitefield",
@@ -187,8 +236,15 @@ const STREETS = [
     floodStatus: "IMPASSABLE",
     passableFor: { twoWheeler: false, hatchbackSedan: false, suvBus: false },
     potholes: [
-      { landmark: "Center Underpass Dip", estimatedDepthCm: 27, widthCm: 140, submerged: true, dangerRating: "AXLE_BREAKER", confidenceScore: 0.96 }
-    ]
+      {
+        landmark: "Center Underpass Dip",
+        estimatedDepthCm: 27,
+        widthCm: 140,
+        submerged: true,
+        dangerRating: "AXLE_BREAKER",
+        confidenceScore: 0.96,
+      },
+    ],
   },
   {
     areaSlug: "whitefield",
@@ -203,8 +259,15 @@ const STREETS = [
     floodStatus: "WATERLOGGED",
     passableFor: { twoWheeler: true, hatchbackSedan: true, suvBus: true },
     potholes: [
-      { landmark: "Metro Pillar 114", estimatedDepthCm: 12, widthCm: 65, submerged: true, dangerRating: "MODERATE", confidenceScore: 0.88 }
-    ]
+      {
+        landmark: "Metro Pillar 114",
+        estimatedDepthCm: 12,
+        widthCm: 65,
+        submerged: true,
+        dangerRating: "MODERATE",
+        confidenceScore: 0.88,
+      },
+    ],
   },
 
   // KORAMANGALA
@@ -221,8 +284,15 @@ const STREETS = [
     floodStatus: "FLOODED",
     passableFor: { twoWheeler: false, hatchbackSedan: true, suvBus: true },
     potholes: [
-      { landmark: "Near Maharaja Signal Drain", estimatedDepthCm: 17, widthCm: 85, submerged: true, dangerRating: "SEVERE", confidenceScore: 0.92 }
-    ]
+      {
+        landmark: "Near Maharaja Signal Drain",
+        estimatedDepthCm: 17,
+        widthCm: 85,
+        submerged: true,
+        dangerRating: "SEVERE",
+        confidenceScore: 0.92,
+      },
+    ],
   },
   {
     areaSlug: "koramangala",
@@ -236,7 +306,7 @@ const STREETS = [
     aiPredictedFloodTimeMins: 0,
     floodStatus: "FLOODED",
     passableFor: { twoWheeler: false, hatchbackSedan: false, suvBus: true },
-    potholes: []
+    potholes: [],
   },
 
   // SILK BOARD
@@ -253,9 +323,16 @@ const STREETS = [
     floodStatus: "IMPASSABLE",
     passableFor: { twoWheeler: false, hatchbackSedan: false, suvBus: true },
     potholes: [
-      { landmark: "BTM 2nd Stage Ramp Merge", estimatedDepthCm: 23, widthCm: 115, submerged: true, dangerRating: "AXLE_BREAKER", confidenceScore: 0.94 }
-    ]
-  }
+      {
+        landmark: "BTM 2nd Stage Ramp Merge",
+        estimatedDepthCm: 23,
+        widthCm: 115,
+        submerged: true,
+        dangerRating: "AXLE_BREAKER",
+        confidenceScore: 0.94,
+      },
+    ],
+  },
 ];
 
 const INITIAL_REPORTS = [
@@ -268,8 +345,9 @@ const INITIAL_REPORTS = [
     reportedWaterDepthCm: 28,
     aiEstimatedPotholeDepthCm: 21,
     aiEstimatedFloodTimeMins: 0,
-    description: "Ankle-to-shin deep waterlogging in service lane; two bikes stalled near hidden pothole.",
-    reportedBy: "Karthik R."
+    description:
+      "Ankle-to-shin deep waterlogging in service lane; two bikes stalled near hidden pothole.",
+    reportedBy: "Karthik R.",
   },
   {
     areaSlug: "hsr-layout",
@@ -281,7 +359,7 @@ const INITIAL_REPORTS = [
     aiEstimatedPotholeDepthCm: 16,
     aiEstimatedFloodTimeMins: 28,
     description: "Deep crater submerged under muddy runoff on left lane.",
-    reportedBy: "Ananya S."
+    reportedBy: "Ananya S.",
   },
   {
     areaSlug: "whitefield",
@@ -292,8 +370,9 @@ const INITIAL_REPORTS = [
     reportedWaterDepthCm: 42,
     aiEstimatedPotholeDepthCm: 27,
     aiEstimatedFloodTimeMins: 0,
-    description: "Underpass completely flooded. Take Varthur-Gunjur diversion immediately.",
-    reportedBy: "Traffic Volunteer"
+    description:
+      "Underpass completely flooded. Take Varthur-Gunjur diversion immediately.",
+    reportedBy: "Traffic Volunteer",
   },
   {
     areaSlug: "koramangala",
@@ -305,7 +384,7 @@ const INITIAL_REPORTS = [
     aiEstimatedPotholeDepthCm: 17,
     aiEstimatedFloodTimeMins: 14,
     description: "Stormwater drain overflowing onto 80ft road junction.",
-    reportedBy: "Rohan M."
+    reportedBy: "Rohan M.",
   },
   {
     areaSlug: "silk-board",
@@ -316,38 +395,61 @@ const INITIAL_REPORTS = [
     reportedWaterDepthCm: 34,
     aiEstimatedPotholeDepthCm: 23,
     aiEstimatedFloodTimeMins: 0,
-    description: "Severe water stagnation blocking BTM-to-Electronic City ramp.",
-    reportedBy: "Priya N."
-  }
+    description:
+      "Severe water stagnation blocking BTM-to-Electronic City ramp.",
+    reportedBy: "Priya N.",
+  },
 ];
 
-async function seedDatabase() {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("[Seed] Connected to MongoDB...");
-
-    await Promise.all([Area.deleteMany({}), Street.deleteMany({}), Report.deleteMany({})]);
-    console.log("[Seed] Cleared existing collections.");
-
-    await Area.insertMany(AREAS);
-    const insertedStreets = await Street.insertMany(STREETS);
-
-    // Link initial reports to street IDs
-    const linkedReports = INITIAL_REPORTS.map((rep) => {
-      const matched = insertedStreets.find(
-        (s) => s.areaSlug === rep.areaSlug && s.name === rep.streetName
-      );
-      return { ...rep, streetId: matched ? matched._id : null };
+async function seedSamples() {
+  if (process.env.DATA_MODE !== "synthetic")
+    throw new Error(
+      "Sample seeding requires DATA_MODE=synthetic and a separate demo database",
+    );
+  for (const area of AREAS)
+    await Area.updateOne(
+      { slug: area.slug },
+      { $setOnInsert: area },
+      { upsert: true },
+    );
+  for (const street of STREETS)
+    await Street.updateOne(
+      { areaSlug: street.areaSlug, name: street.name },
+      { $setOnInsert: street },
+      { upsert: true },
+    );
+  for (const [i, rep] of INITIAL_REPORTS.entries()) {
+    const street = await Street.findOne({
+      areaSlug: rep.areaSlug,
+      name: rep.streetName,
     });
-
-    await Report.insertMany(linkedReports);
-
-    console.log(`[Seed] Inserted ${AREAS.length} Bengaluru areas, ${STREETS.length} streets, and ${linkedReports.length} live reports.`);
-    process.exit(0);
-  } catch (err) {
-    console.error("[Seed] Error:", err);
-    process.exit(1);
+    await Report.updateOne(
+      { sourceKey: `sample-v1-${i}` },
+      {
+        $setOnInsert: {
+          ...rep,
+          streetId: street._id,
+          source: "synthetic",
+          status: "confirmed",
+          reportedBy: "Synthetic example",
+          expiresAt: new Date(Date.now() + 86400000),
+        },
+      },
+      { upsert: true },
+    );
   }
 }
-
-seedDatabase();
+async function seedDatabase() {
+  try {
+    await require("../config/db")();
+    await seedSamples();
+    console.log("Synthetic sample data added; existing records preserved.");
+  } catch {
+    console.error("Seeding failed. Check DATA_MODE, connection and indexes.");
+    process.exitCode = 1;
+  } finally {
+    await mongoose.disconnect();
+  }
+}
+if (require.main === module) seedDatabase();
+module.exports = { AREAS, STREETS, INITIAL_REPORTS, seedSamples };
