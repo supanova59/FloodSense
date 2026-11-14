@@ -47,6 +47,7 @@ import {
   type ReportInput,
 } from "../lib/reports";
 import ReportDialog from "./ReportDialog";
+import StreetMonitor from "./StreetMonitor";
 import RiskExplanation from "./RiskExplanation";
 const RiskMap = dynamic(() => import("./RiskMap"), {
   ssr: false,
@@ -56,15 +57,21 @@ const RiskMap = dynamic(() => import("./RiskMap"), {
     </div>
   ),
 });
-type View = "overview" | "explorer" | "routes" | "reports" | "operations";
+type View =
+  "streets" | "overview" | "explorer" | "routes" | "reports" | "operations";
 const nav = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "streets", label: "My neighbourhood", icon: Droplets },
   { id: "explorer", label: "Risk explorer", icon: Map },
   { id: "routes", label: "Route intelligence", icon: Route },
   { id: "reports", label: "Community reports", icon: Users },
   { id: "operations", label: "City operations", icon: Activity },
 ] as const;
 const headings: Record<View, [string, string]> = {
+  streets: [
+    "Your neighbourhood",
+    "Street conditions, local observations and area alerts in one place.",
+  ],
   overview: [
     "City overview",
     "A clearer picture of flood exposure, right down to your route.",
@@ -460,7 +467,9 @@ export default function Dashboard() {
                 {headings[view][1]}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div
+              className={view === "streets" ? "hidden" : "flex flex-wrap gap-2"}
+            >
               <button onClick={downloadCsv} className="btn-secondary">
                 <Download size={16} />{" "}
                 <span className="hidden sm:inline">Export snapshot</span>
@@ -475,81 +484,86 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-          <div className="mb-7 flex items-start gap-3 rounded-xl border border-[#d9e7f9] bg-[#edf5ff] px-4 py-3 text-[12px] leading-relaxed text-[#3c6289]">
-            <Info size={17} className="mt-0.5 shrink-0" />
-            <p>
-              <b>Interactive prototype.</b> Forecasts, risk scores, route
-              estimates and dispatch actions are simulated. Reports are
-              unverified observations; sample entries are labelled. This is not
-              a live emergency warning service.
-            </p>
-          </div>
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs">
-            <p role="status" className="text-slate-600">
-              {loading
-                ? "Loading reports…"
-                : reportError
-                  ? "Report storage needs attention."
-                  : `${reports.length} reports · ${apiBase ? "Connected report service" : "Browser session · no backend connected"}`}
-            </p>
-            <div className="flex gap-3">
-              <button
-                className="font-semibold text-blue-700 disabled:opacity-50"
-                disabled={loading}
-                onClick={() => void loadReports()}
-              >
-                Refresh reports
-              </button>
-              {!apiBase && (
-                <button
-                  className="font-semibold text-slate-600 disabled:opacity-50"
-                  disabled={loading}
-                  onClick={async () => {
-                    if (
-                      !window.confirm(
-                        "Reset reports to sample data in this tab? This removes your local contributions.",
-                      )
-                    )
-                      return;
-                    try {
-                      if (!repository.current)
-                        repository.current = createSessionRepository(
-                          window.sessionStorage,
-                        );
-                      const rows = await repository.current.reset!();
-                      setReports(rows);
-                      setReportError("");
-                      setNow(Date.now());
-                      notify("Demo reports reset.");
-                    } catch {
-                      setReportError(
-                        "Browser storage is unavailable. Enable storage and retry.",
-                      );
-                    }
-                  }}
+          {view !== "streets" && (
+            <>
+              <div className="mb-7 flex items-start gap-3 rounded-xl border border-[#d9e7f9] bg-[#edf5ff] px-4 py-3 text-[12px] leading-relaxed text-[#3c6289]">
+                <Info size={17} className="mt-0.5 shrink-0" />
+                <p>
+                  <b>Interactive prototype.</b> Forecasts, risk scores, route
+                  estimates and dispatch actions are simulated. Reports are
+                  unverified observations; sample entries are labelled. This is
+                  not a live emergency warning service.
+                </p>
+              </div>
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs">
+                <p role="status" className="text-slate-600">
+                  {loading
+                    ? "Loading reports…"
+                    : reportError
+                      ? "Report storage needs attention."
+                      : `${reports.length} reports · ${apiBase ? "Connected report service" : "Browser session · no backend connected"}`}
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    className="font-semibold text-blue-700 disabled:opacity-50"
+                    disabled={loading}
+                    onClick={() => void loadReports()}
+                  >
+                    Refresh reports
+                  </button>
+                  {!apiBase && (
+                    <button
+                      className="font-semibold text-slate-600 disabled:opacity-50"
+                      disabled={loading}
+                      onClick={async () => {
+                        if (
+                          !window.confirm(
+                            "Reset reports to sample data in this tab? This removes your local contributions.",
+                          )
+                        )
+                          return;
+                        try {
+                          if (!repository.current)
+                            repository.current = createSessionRepository(
+                              window.sessionStorage,
+                            );
+                          const rows = await repository.current.reset!();
+                          setReports(rows);
+                          setReportError("");
+                          setNow(Date.now());
+                          notify("Demo reports reset.");
+                        } catch {
+                          setReportError(
+                            "Browser storage is unavailable. Enable storage and retry.",
+                          );
+                        }
+                      }}
+                    >
+                      Reset demo reports
+                    </button>
+                  )}
+                </div>
+              </div>
+              {reportError && (
+                <p
+                  role="alert"
+                  className="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"
                 >
-                  Reset demo reports
-                </button>
+                  {reportError}{" "}
+                  {reports.length
+                    ? "Previously loaded observations remain visible and may be stale."
+                    : "Scores currently exclude report contributions."}{" "}
+                  Use Refresh reports to retry
+                  {!apiBase
+                    ? " or Reset demo reports to recover invalid session data"
+                    : ""}
+                  .
+                </p>
               )}
-            </div>
-          </div>
-          {reportError && (
-            <p
-              role="alert"
-              className="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"
-            >
-              {reportError}{" "}
-              {reports.length
-                ? "Previously loaded observations remain visible and may be stale."
-                : "Scores currently exclude report contributions."}{" "}
-              Use Refresh reports to retry
-              {!apiBase
-                ? " or Reset demo reports to recover invalid session data"
-                : ""}
-              .
-            </p>
+            </>
           )}
           <div key={view} className="fade-enter">
+            {view === "streets" && <StreetMonitor />}
             {view === "overview" && (
               <div className="space-y-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
@@ -1051,6 +1065,7 @@ export default function Dashboard() {
                     risks={risks}
                     route={from !== to ? { usual: normal, safer } : undefined}
                     height="min(70vh,640px)"
+                    bbmpDefaultVisible={false}
                   />
                 </div>
               </div>

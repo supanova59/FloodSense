@@ -1,0 +1,32 @@
+{
+  "name": "floodsense-backend",
+  "version": "1.0.0",
+  "description": "MERN + Socket.IO Backend for FloodSense Bengaluru (Hyperlocal Flood Time, Pothole Depth AI Estimator & Live Area Alerts)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node src/seed/seedBengaluru.js",
+    "preview": "node preview/start.js",
+    "test": "node --test tests/*.test.js",
+    "check": "node scripts/check.js",
+    "admin": "node src/admin.js"
+  },
+  "dependencies": {
+    "@netlify/server": "^0.1.6",
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mongoose": "^8.7.1",
+    "socket.io": "^4.8.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "nodemon": "^3.1.7",
+    "socket.io-client": "^4.8.4"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

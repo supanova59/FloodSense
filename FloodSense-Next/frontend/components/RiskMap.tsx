@@ -2,6 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { Zone } from "../lib/demo";
 import { severity } from "../lib/demo";
+import {
+  BBMP_LAYERS,
+  bbmpPopupHtml,
+  loadBbmpLayer,
+  type BbmpLayerId,
+  type BbmpPoint,
+} from "../lib/bbmp";
 type Props = {
   zones: Zone[];
   risks: Record<string, number>;
@@ -9,6 +16,8 @@ type Props = {
   onSelect?: (id: string) => void;
   route?: { usual: string[]; safer: string[] };
   height?: string;
+  /** Whether the official BBMP overlay layers start switched on. */
+  bbmpDefaultVisible?: boolean;
 };
 export default function RiskMap({
   zones,
@@ -17,13 +26,27 @@ export default function RiskMap({
   onSelect,
   route,
   height = "410px",
+  bbmpDefaultVisible = true,
 }: Props) {
   const [mapReady, setMapReady] = useState(false),
     [mapError, setMapError] = useState(""),
     [attempt, setAttempt] = useState(0);
+  const [visible, setVisible] = useState<Record<BbmpLayerId, boolean>>(() => ({
+      "flood-prone": bbmpDefaultVisible,
+      "low-lying": bbmpDefaultVisible,
+      "flood-vulnerable": bbmpDefaultVisible,
+    })),
+    [bbmpData, setBbmpData] = useState<
+      Partial<Record<BbmpLayerId, BbmpPoint[]>>
+    >({}),
+    [bbmpError, setBbmpError] = useState(""),
+    [bbmpAttempt, setBbmpAttempt] = useState(0),
+    [panelOpen, setPanelOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null),
     mapRef = useRef<import("leaflet").Map | null>(null),
     layers = useRef<import("leaflet").Layer[]>([]),
+    overlays = useRef<import("leaflet").Layer[]>([]),
+    renderer = useRef<import("leaflet").Renderer | null>(null),
     cb = useRef(onSelect);
   cb.current = onSelect;
   useEffect(() => {
@@ -40,8 +63,9 @@ export default function RiskMap({
           scrollWheelZoom: false,
           zoomControl: false,
           attributionControl: true,
-        }).setView([12.981, 77.675], 11);
+        }).setView([12.972, 77.615], 11);
         mapRef.current = map;
+        renderer.current = L.canvas({ padding: 0.5 });
         setMapReady(true);
         L.control.zoom({ position: "bottomright" }).addTo(map);
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -70,9 +94,69 @@ export default function RiskMap({
       resize?.disconnect();
       map?.remove();
       mapRef.current = null;
+      renderer.current = null;
       layers.current = [];
+      overlays.current = [];
     };
   }, [attempt]);
+  useEffect(() => {
+    let cancelled = false;
+    setBbmpError("");
+    Promise.allSettled(BBMP_LAYERS.map((l) => loadBbmpLayer(l.id))).then(
+      (results) => {
+        if (cancelled) return;
+        const next: Partial<Record<BbmpLayerId, BbmpPoint[]>> = {};
+        const failed: string[] = [];
+        results.forEach((r, i) => {
+          if (r.status === "fulfilled") next[BBMP_LAYERS[i].id] = r.value;
+          else failed.push(BBMP_LAYERS[i].label);
+        });
+        setBbmpData(next);
+        if (failed.length)
+          setBbmpError(`Could not load: ${failed.join(", ")}.`);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [bbmpAttempt]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const L = await import("leaflet");
+      if (cancelled || !mapRef.current) return;
+      const m = mapRef.current;
+      overlays.current.forEach((l) => m.removeLayer(l));
+      overlays.current = [];
+      for (const layer of BBMP_LAYERS) {
+        const points = bbmpData[layer.id];
+        if (!visible[layer.id] || !points) continue;
+        const group = L.layerGroup();
+        for (const p of points) {
+          const tooltip = document.createElement("span");
+          tooltip.textContent = p.name;
+          L.circleMarker([p.lat, p.lng], {
+            renderer: renderer.current ?? undefined,
+            radius: 5.5,
+            color: "#ffffff",
+            weight: 1.5,
+            fillColor: layer.color,
+            fillOpacity: 0.85,
+          })
+            .bindTooltip(tooltip, { direction: "top", offset: [0, -6] })
+            .bindPopup(bbmpPopupHtml(layer, p))
+            .addTo(group);
+        }
+        group.addTo(m);
+        overlays.current.push(group);
+      }
+    })().catch(() => {
+      if (!cancelled) setBbmpError("BBMP layers could not be drawn.");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [bbmpData, visible, mapReady]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -149,7 +233,7 @@ export default function RiskMap({
         <div
           ref={container}
           className="h-full w-full"
-          aria-label="Interactive map of demonstration flood risk around Bengaluru"
+          aria-label="Interactive map of demonstration flood risk and official BBMP flood locations around Bengaluru"
           role="region"
         />
         {!mapReady && !mapError && (
@@ -163,6 +247,61 @@ export default function RiskMap({
         <div className="pointer-events-none absolute left-4 top-4 z-[400] rounded-lg border border-white/90 bg-white/95 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-600 shadow-sm">
           Illustrative flood risk · not live
         </div>
+        <details
+          open={panelOpen}
+          onToggle={(e) => setPanelOpen(e.currentTarget.open)}
+          className="absolute right-3 top-14 z-[450] w-52 rounded-lg sm:top-3 sm:w-56 border border-white/90 bg-white/95 text-xs text-slate-700 shadow-sm"
+        >
+          <summary className="cursor-pointer select-none px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+            BBMP flood data
+          </summary>
+          <fieldset className="space-y-1.5 px-3 pb-3">
+            <legend className="sr-only">Toggle BBMP map layers</legend>
+            {BBMP_LAYERS.map((l) => {
+              const count = bbmpData[l.id]?.length;
+              return (
+                <label
+                  key={l.id}
+                  className="flex cursor-pointer items-center gap-2"
+                  title={l.description}
+                >
+                  <input
+                    type="checkbox"
+                    className="h-3.5 w-3.5 accent-blue-600"
+                    checked={visible[l.id]}
+                    onChange={(e) =>
+                      setVisible((v) => ({ ...v, [l.id]: e.target.checked }))
+                    }
+                  />
+                  <i
+                    className="inline-block h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-white"
+                    style={{ background: l.color }}
+                  />
+                  <span className="flex-1">{l.label}</span>
+                  <span className="tabular-nums text-slate-500">
+                    {count ?? "…"}
+                  </span>
+                </label>
+              );
+            })}
+            {bbmpError && (
+              <p role="status" className="pt-1 text-[11px] text-amber-800">
+                {bbmpError}{" "}
+                <button
+                  type="button"
+                  className="font-bold underline"
+                  onClick={() => setBbmpAttempt((n) => n + 1)}
+                >
+                  Retry
+                </button>
+              </p>
+            )}
+            <p className="pt-1 text-[10px] leading-snug text-slate-500">
+              Supplied BBMP reference exports · date and licence unverified.
+              Locations are not current flood readings. Click for details.
+            </p>
+          </fieldset>
+        </details>
         <div className="pointer-events-none absolute bottom-5 left-4 z-[400] flex gap-3 rounded-lg bg-white/95 px-3 py-2 text-xs text-slate-600 shadow-sm">
           <span>
             <i className="legend-dot bg-emerald-500" /> Low
